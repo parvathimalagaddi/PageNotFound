@@ -1,0 +1,19 @@
+version: "2"
+networks:
+  nw01:
+    driver: bridge
+
+services:
+  app:
+    image: parvathichm/pagenotfound:staging
+    ports:
+      - 7000:8080
+    networks:
+      - nw01
+    depends_on:
+      - mymongo
+
+  mymongo:
+    image: mongo:latest
+    networks:
+- nw01
