@@ -13,7 +13,7 @@ public class MongoServiceVerticle extends AbstractVerticle {
                     JsonObject config = new JsonObject();
                     config.put("db_name", "qaforum");
                     config.put("connection_string",
-                            "mongodb://mongoinstance:27017");
+                            "mongodb://mymongo:27017");
                     MongoClient client = MongoClient.createShared(vertx,
                             config);
 
@@ -39,7 +39,7 @@ public class MongoServiceVerticle extends AbstractVerticle {
                     JsonObject config = new JsonObject();
                     config.put("db_name", "qaforum");
                     config.put("connection_string",
-                            "mongodb://mongoinstance:27017");
+                            "mongodb://mymongo:27017");
                     MongoClient client = MongoClient.createShared(vertx,
                             config);
                     System.out.println("To be Created User " +message.body().toString());
