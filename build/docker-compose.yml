@@ -16,4 +16,4 @@ services:
   mymongo:
     image: mongo:latest
     networks:
-- nw01
+      - nw01
