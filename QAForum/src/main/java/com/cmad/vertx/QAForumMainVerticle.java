@@ -54,6 +54,26 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
         });
 
+        router.route("/qaforum/question").handler(BodyHandler.create());
+        router.post("/qaforum/question").handler(rctx -> {
+            vertx.eventBus().send("com.cmad.vertx.qaforum.question.question.add",
+                    rctx.getBodyAsJson().encodePrettily(), res -> {
+
+                        if (res.result().body().toString().equals("-1")) {
+                            rctx.response().setStatusCode(500).end();
+                        } else {
+
+                            rctx.response().setStatusCode(201)
+                                    .putHeader("Content-Type",
+                                            "application/json")
+                                    .putHeader("Location", "qaforum/question/"
+                                            + res.result().body().toString())
+                                    .end();
+                        }
+                    });
+
+        });
+
         vertx.createHttpServer().requestHandler(router::accept)
                 .listen(config().getInteger("http.port", 8080), result -> {
                     if (result.succeeded()) {

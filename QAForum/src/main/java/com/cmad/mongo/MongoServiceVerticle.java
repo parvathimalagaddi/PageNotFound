@@ -12,8 +12,7 @@ public class MongoServiceVerticle extends AbstractVerticle {
 
                     JsonObject config = new JsonObject();
                     config.put("db_name", "qaforum");
-                    config.put("connection_string",
-                            "mongodb://mymongo:27017");
+                    config.put("connection_string", "mongodb://mymongo:27017");
                     MongoClient client = MongoClient.createShared(vertx,
                             config);
 
@@ -21,7 +20,8 @@ public class MongoServiceVerticle extends AbstractVerticle {
                             message.body().toString()), res -> {
                                 if (res.succeeded()) {
                                     if (res.result().size() != 0) {
-                                        System.out.println("User exist " + res.result());
+                                        System.out.println(
+                                                "User exist " + res.result());
                                         message.reply(res.result().toString());
                                     } else {
                                         message.reply("");
@@ -38,12 +38,34 @@ public class MongoServiceVerticle extends AbstractVerticle {
 
                     JsonObject config = new JsonObject();
                     config.put("db_name", "qaforum");
-                    config.put("connection_string",
-                            "mongodb://mymongo:27017");
+                    config.put("connection_string", "mongodb://mymongo:27017");
                     MongoClient client = MongoClient.createShared(vertx,
                             config);
-                    System.out.println("To be Created User " +message.body().toString());
+                    System.out.println(
+                            "To be Created User " + message.body().toString());
                     client.insert("user",
+                            new JsonObject(message.body().toString()), res -> {
+                                if (res.succeeded()) {
+                                    message.reply(res.result());
+                                } else {
+                                    res.cause().printStackTrace();
+                                    message.reply(-1);
+                                }
+
+                            });
+                });
+
+        vertx.eventBus().consumer("com.cmad.vertx.qaforum.question.add",
+                message -> {
+
+                    JsonObject config = new JsonObject();
+                    config.put("db_name", "qaforum");
+                    config.put("connection_string", "mongodb://mymongo:27017");
+                    MongoClient client = MongoClient.createShared(vertx,
+                            config);
+                    System.out.println(
+                            "To be Created Question " + message.body().toString());
+                    client.insert("question",
                             new JsonObject(message.body().toString()), res -> {
                                 if (res.succeeded()) {
                                     message.reply(res.result());
