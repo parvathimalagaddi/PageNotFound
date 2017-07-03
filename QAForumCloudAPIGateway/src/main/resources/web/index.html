@@ -1,0 +1,24 @@
+<html>
+<head>
+<title>Glarimy Library</title>
+<script src="jquery-2.1.3.js"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$("#btn").bind("click", function() {
+			$.post("/library/tools/interest/", JSON.parse{"p" : $("#p").val() , "t" : $("#t").val() , "r" : $("#r").val()});
+		});
+	});
+</script>
+</head>
+<body>
+	<h1>Glarimy Library</h1>
+	<hr />
+	
+	Find Interest:
+	<input id='p' placeholder="Principal">
+	<input id='t' placeholder="Time">
+	<input id='r' placeholder="Rate">
+	<span id='title'></span>
+	<button id="btn">Go!</button>
+</body>
+</html>
