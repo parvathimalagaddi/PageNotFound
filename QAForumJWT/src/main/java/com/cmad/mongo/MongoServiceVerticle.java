@@ -3,8 +3,10 @@ package com.cmad.mongo;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
+import static com.cmad.util.CmadUtils.*;
 
 public class MongoServiceVerticle extends AbstractVerticle {
+
 
     @Override
     public void start() throws Exception {
@@ -15,10 +17,10 @@ public class MongoServiceVerticle extends AbstractVerticle {
         config.put("connection_string", "mongodb://"+mongoHost+":27017");
         MongoClient client = MongoClient.createShared(super.vertx, config);
 
-        vertx.eventBus().consumer("com.cmad.vertx.qaforum.question.user.userid",
+        vertx.eventBus().consumer(USER_GET,
                 message -> {
 
-                    client.find("user", new JsonObject().put("userid",
+                    client.find(USER_COLLECTION, new JsonObject().put(USER,
                             message.body().toString()), res -> {
                                 if (res.succeeded()) {
                                     if (res.result().size() != 0) {
@@ -35,7 +37,7 @@ public class MongoServiceVerticle extends AbstractVerticle {
                             });
                 });
 
-        vertx.eventBus().consumer("com.cmad.vertx.qaforum.question.user.add",
+        vertx.eventBus().consumer(USER_ADD,
                 message -> {
 
                     System.out.println(
@@ -43,10 +45,10 @@ public class MongoServiceVerticle extends AbstractVerticle {
                     
                     JsonObject userObject = new JsonObject(
                             message.body().toString());
-
-                    client.insert("user", userObject, res -> {
+                    
+                    client.insert(USER_COLLECTION, userObject, res -> {  
                         if (res.succeeded()) {
-                            message.reply(userObject.getString("userId"));
+                            message.reply(userObject.getString(USER));
                         } else {
                             res.cause().printStackTrace();
                             message.reply(-1);
@@ -55,92 +57,11 @@ public class MongoServiceVerticle extends AbstractVerticle {
                     });
                 });
 
-        vertx.eventBus().consumer("com.cmad.vertx.qaforum.question.add",
-                message -> {
-
-                    System.out.println("To be Created Question "
-                            + message.body().toString());
-                    client.insert("question",
-                            new JsonObject(message.body().toString()), res -> {
-                                if (res.succeeded()) {
-                                    message.reply(res.result());
-                                } else {
-                                    res.cause().printStackTrace();
-                                    message.reply(-1);
-                                }
-
-                            });
-                });
-        
-        vertx.eventBus().consumer("com.cmad.vertx.qaforum.question.all",
-                message -> {
-
-                    client.find("question", new JsonObject(), res -> {
-                                if (res.succeeded()) {
-                                    if (res.result().size() != 0) {
-                                        message.reply(res.result().toString());
-                                    } else {
-                                        message.reply("");
-                                    }
-                                } else {
-                                    res.cause().printStackTrace();
-                                    message.reply("");
-                                }
-                            });
-                });
-
-        vertx.eventBus().consumer("com.cmad.vertx.qaforum.question.answer.add",
-                message -> {
-                    JsonObject input = new JsonObject(
-                            message.body().toString());
-
-                    // Create the query and the update operation.
-                    JsonObject query = new JsonObject().put("_id",
-                            input.getString("qid"));
-                    JsonObject answer = new JsonObject()
-                            .put("answer", input.getString("answer"))
-                            .put("userid", input.getString("userid"))
-                            .put("postTime", System.currentTimeMillis());
-
-                    JsonObject update = new JsonObject().put("$addToSet",
-                            new JsonObject().put("answers", answer));
-
-                    client.updateCollection("question", query, update, res -> {
-                        if (res.succeeded()) {
-                            message.reply(201);
-                        } else {
-                            res.cause().printStackTrace();
-                            message.reply(-1);
-                        }
-
-                    });
-                });
-
-        vertx.eventBus().consumer("com.cmad.vertx.qaforum.question.get",
-                message -> {
-
-                    client.find("question", new JsonObject().put("_id",
-                            message.body().toString()), res -> {
-                                if (res.succeeded()) {
-                                    if (res.result().size() != 0) {
-                                        System.out.println(
-                                                "User exist " + res.result());
-                                        message.reply(res.result().toString());
-                                    } else {
-                                        message.reply("");
-                                    }
-                                } else {
-                                    res.cause().printStackTrace();
-                                    message.reply("");
-                                }
-                            });
-                });
-
-        vertx.eventBus().consumer("com.cmad.vertx.qaforum.login", message -> {
+        vertx.eventBus().consumer(USER_LOGIN, message -> {
 
             JsonObject userObject = new JsonObject(message.body().toString());
 
-            client.find("user", userObject, res -> {
+            client.find(USER_COLLECTION, userObject, res -> {
                 if (res.succeeded()) {
                     if (res.result().size() != 0) {
                         System.out.println("User exist " + res.result());

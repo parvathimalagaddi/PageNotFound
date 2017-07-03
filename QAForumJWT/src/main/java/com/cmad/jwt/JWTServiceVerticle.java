@@ -1,33 +1,51 @@
 package com.cmad.jwt;
 
+import static com.cmad.util.CmadUtils.TICKET_GET;
+import static com.cmad.util.CmadUtils.TICKET_VERIFY;
+
 import java.security.Key;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.json.JsonObject;
 
 public class JWTServiceVerticle extends AbstractVerticle {
 
     @Override
     public void start() {
-        vertx.eventBus().consumer("com.cmad.vertx.qaforum.ticket", message -> {
-            Key key = MacProvider.generateKey();
+        Key key = MacProvider.generateKey();
+        vertx.eventBus().consumer(TICKET_GET, message -> {
+
             String compactJws = Jwts.builder()
                     .setSubject(message.body().toString())
                     .setIssuer("cmad@cisco.com")
                     .signWith(SignatureAlgorithm.HS512, key).compact();
             message.reply(compactJws);
         });
-        
-        
-        vertx.eventBus().consumer("com.cmad.vertx.qaforum.ticket.verify", message -> {
-            Key key = MacProvider.generateKey();
-            String compactJws = Jwts.builder()
-                    .setSubject(message.body().toString())
-                    .setIssuer("cmad@cisco.com")
-                    .signWith(SignatureAlgorithm.HS512, key).compact();
-            message.reply(compactJws);
+
+        vertx.eventBus().consumer(TICKET_VERIFY, message -> {
+
+            try {
+                Claims claims = Jwts.parser().setSigningKey(key)
+                        .parseClaimsJws(message.body().toString()).getBody();
+                // Verify the issuer claim.
+
+                if (claims.getIssuer().equals("cmad@cisco.com")) {
+                    message.reply(new JsonObject().put("status", "Success")
+                            .put("username", claims.getSubject()));
+
+                } else {
+                    message.reply(new JsonObject().put("status", "Failure")
+                            .put("username", claims.getSubject()));
+                }
+            } catch (Exception e) {
+                System.out.println("An Exception while parsing the token.");
+                message.reply(new JsonObject().put("status", "Failure"));
+            }
+
         });
     }
 
