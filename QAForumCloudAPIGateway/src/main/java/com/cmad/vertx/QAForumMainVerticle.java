@@ -41,8 +41,9 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                     + " with route to " + routeTo
                                     + " end point is " + ipAddress);
 
-                            vertx.createHttpClient().getNow(ipAddress, routeTo,
-                                    resp -> {
+                            HttpClientRequest getRequest = vertx
+                                    .createHttpClient()
+                                    .get(ipAddress, routeTo, resp -> {
                                         resp.bodyHandler(data -> {
                                             HttpServerResponse responseToBeSent = rctx
                                                     .response()
@@ -55,6 +56,10 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                             responseToBeSent.end(data);
                                         });
                                     });
+
+                            getRequest.headers()
+                                    .addAll(rctx.request().headers());
+                            getRequest.end();
 
                         });
 
