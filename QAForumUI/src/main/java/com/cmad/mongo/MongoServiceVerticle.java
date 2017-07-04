@@ -11,7 +11,7 @@ public class MongoServiceVerticle extends AbstractVerticle {
     @Override
     public void start() throws Exception {
 
-        String mongoHost = System.getProperty("MONGOHOST");
+        String mongoHost = System.getProperty("MONGOHOST", "localhost");
         JsonObject config = new JsonObject();
         config.put("db_name", "qaforum");
         config.put("connection_string", "mongodb://" + mongoHost + ":27017");
@@ -21,8 +21,8 @@ public class MongoServiceVerticle extends AbstractVerticle {
 
             System.out.println(
                     "To be Created Question " + message.body().toString());
-            client.insert(QUESTION_COLLECTION, new JsonObject(message.body().toString()),
-                    res -> {
+            client.insert(QUESTION_COLLECTION,
+                    new JsonObject(message.body().toString()), res -> {
                         if (res.succeeded()) {
                             message.reply(res.result());
                         } else {
@@ -38,8 +38,8 @@ public class MongoServiceVerticle extends AbstractVerticle {
             FindOptions findOptions = new FindOptions();
             findOptions.setFields(new JsonObject().put("question", "1"));
 
-            client.findWithOptions(QUESTION_COLLECTION, new JsonObject(), findOptions,
-                    res -> {
+            client.findWithOptions(QUESTION_COLLECTION, new JsonObject(),
+                    findOptions, res -> {
                         if (res.succeeded()) {
                             if (res.result().size() != 0) {
                                 message.reply(res.result().toString());
