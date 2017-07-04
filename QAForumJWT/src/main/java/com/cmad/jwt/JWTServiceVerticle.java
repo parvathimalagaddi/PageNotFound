@@ -43,6 +43,7 @@ public class JWTServiceVerticle extends AbstractVerticle {
                 }
             } catch (Exception e) {
                 System.out.println("An Exception while parsing the token.");
+                e.printStackTrace();
                 message.reply(new JsonObject().put("status", "Failure"));
             }
 
