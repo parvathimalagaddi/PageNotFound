@@ -49,8 +49,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                     .putHeader("Content-Type",
                                             "application/json")
                                     .putHeader("Location", "/question/"
-                                            + rctx.request().getParam("qid")
-                                            + res.result().body().toString())
+                                            + rctx.request().getParam("qid"))
                                     .end();
                         }
                     });
