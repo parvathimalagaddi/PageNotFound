@@ -26,7 +26,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
                 new DeploymentOptions().setWorker(true));
 
         Router router = Router.router(vertx);
-        
+
         router.get("/").handler(rctx -> {
 
             rctx.response().setStatusCode(200).setStatusMessage("OK")
@@ -98,19 +98,28 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
         router.route("/user/ticket/").handler(BodyHandler.create());
         router.get("/user/ticket/").handler(rctx -> {
-            vertx.eventBus().send(TICKET_VERIFY,
-                    rctx.request().getHeader(JWT_TOKEN), res -> {
-                        System.out.println(res.result().body());
-                        JsonObject result = (JsonObject) res.result().body();
-                        if (result.getString("status").equals("Success")) {
-                            rctx.response().setStatusCode(200)
-                                    .end(result.getString("username"));
-                        } else {
-                            rctx.response().setStatusCode(401).end();
-                        }
-                    });
 
-        });
+            if (rctx.request().getHeader(JWT_TOKEN) == null) {
+                System.out.println("Auth Header not given");
+                rctx.response().setStatusCode(401).end();
+            } else {
+                vertx.eventBus().send(TICKET_VERIFY,
+                        rctx.request().getHeader(JWT_TOKEN), res -> {
+                            System.out.println(res.result().body());
+                            JsonObject result = (JsonObject) res.result()
+                                    .body();
+                            if (result.getString("status").equals("Success")) {
+                                rctx.response().setStatusCode(200)
+                                        .end(result.getString("username"));
+                            } else {
+                                rctx.response().setStatusCode(401).end();
+                            }
+                        });
+            }
+
+        }
+
+        );
 
         vertx.createHttpServer().requestHandler(router::accept)
                 .listen(config().getInteger("http.port", 8080), result -> {

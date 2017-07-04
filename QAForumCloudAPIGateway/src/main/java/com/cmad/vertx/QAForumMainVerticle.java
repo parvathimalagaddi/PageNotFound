@@ -1,5 +1,8 @@
 package com.cmad.vertx;
 
+import com.cmad.util.CmadUtils;
+
+import io.netty.handler.codec.http.HttpStatusClass;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpClient;
@@ -74,8 +77,39 @@ public class QAForumMainVerticle extends AbstractVerticle {
                     "");
 
             /*
-             * All post requests should contain a valid JWT Auth Token.
+             * All post requests should contain a valid JWT Auth Token except
+             * user creations.
              */
+
+            if (!resource.equals("user")) {
+                vertx.createHttpClient()
+                        .request(HttpMethod.GET, "metadata",
+                                "/computeMetadata/v1/project/attributes/v1-user")
+                        .putHeader("Metadata-Flavor", "Google").handler(res -> {
+
+                            res.bodyHandler(endPoint -> {
+                                String ipAddress = endPoint.toString();
+
+                                vertx.createHttpClient()
+                                        .request(HttpMethod.GET, ipAddress,
+                                                "/user/ticket")
+                                        .putHeader(CmadUtils.JWT_TOKEN,
+                                                rctx.request().getHeader(
+                                                        CmadUtils.JWT_TOKEN))
+                                        .handler(authResp -> {
+                                            if (authResp.statusCode() == 401) {
+                                                rctx.response()
+                                                        .setStatusCode(401)
+                                                        .setStatusMessage(
+                                                                "Unauthorized")
+                                                        .end("Unauthorized Access");
+                                            }
+                                        }).end();
+
+                            });
+
+                        }).end();
+            }
 
             HttpClient httpClient = vertx.createHttpClient();
 
