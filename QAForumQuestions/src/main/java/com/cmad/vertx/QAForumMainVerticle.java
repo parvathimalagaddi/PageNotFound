@@ -16,8 +16,8 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
         Router router = Router.router(vertx);
 
-        router.route("/question").handler(BodyHandler.create());
-        router.post("/question").handler(rctx -> {
+        router.route("/question/").handler(BodyHandler.create());
+        router.post("/question/").handler(rctx -> {
 
             vertx.eventBus().send(QUESTION_ADD,
                     rctx.getBodyAsJson().encodePrettily(), res -> {
@@ -37,8 +37,8 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
         });
 
-        router.route("/question/:qid/answer").handler(BodyHandler.create());
-        router.post("/question/:qid/answer").handler(rctx -> {
+        router.route("/question/:qid/answer/").handler(BodyHandler.create());
+        router.post("/question/:qid/answer/").handler(rctx -> {
             vertx.eventBus().send(QUESTION_ANSWER_ADD, rctx.getBodyAsJson()
                     .put("qid", rctx.request().getParam("qid")), res -> {
 
@@ -56,7 +56,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
         });
 
-        router.get("/question/:qid").handler(rctx -> {
+        router.get("/question/:qid/").handler(rctx -> {
 
             vertx.eventBus().send(QUESTION_GET, rctx.request().getParam("qid"),
                     res -> {
@@ -74,7 +74,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
                     });
         });
 
-        router.get("/question").handler(rctx -> {
+        router.get("/question/").handler(rctx -> {
 
             vertx.eventBus().send(QUESTION_ALL, "", res -> {
 

@@ -27,7 +27,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
         Router router = Router.router(vertx);
 
-        router.get("/user/:username").handler(rctx -> {
+        router.get("/user/:username/").handler(rctx -> {
 
             vertx.eventBus().send(USER_GET, rctx.request().getParam(USER),
                     res -> {
@@ -45,8 +45,8 @@ public class QAForumMainVerticle extends AbstractVerticle {
                     });
         });
 
-        router.route("/user").handler(BodyHandler.create());
-        router.post("/user").handler(rctx -> {
+        router.route("/user/").handler(BodyHandler.create());
+        router.post("/user/").handler(rctx -> {
             vertx.eventBus().send(USER_ADD,
                     rctx.getBodyAsJson().encodePrettily(), res -> {
 
@@ -66,8 +66,8 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
         });
 
-        router.route("/user/ticket").handler(BodyHandler.create());
-        router.post("/user/ticket").handler(rctx -> {
+        router.route("/user/ticket/").handler(BodyHandler.create());
+        router.post("/user/ticket/").handler(rctx -> {
             vertx.eventBus().send(USER_LOGIN,
                     rctx.getBodyAsJson().encodePrettily(), res -> {
 
@@ -89,8 +89,8 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
         });
 
-        router.route("/user/ticket").handler(BodyHandler.create());
-        router.get("/user/ticket").handler(rctx -> {
+        router.route("/user/ticket/").handler(BodyHandler.create());
+        router.get("/user/ticket/").handler(rctx -> {
             vertx.eventBus().send(TICKET_VERIFY,
                     rctx.request().getHeader(JWT_TOKEN), res -> {
                         System.out.println(res.result().body());
