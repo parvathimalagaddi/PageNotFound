@@ -15,16 +15,20 @@ public class QAForumMainVerticle extends AbstractVerticle {
         Router router = Router.router(vertx);
 
         router.get("/api/:version/:resource/*").handler(rctx -> {
+
             String apiVersion = rctx.request().getParam("version");
             String resource = rctx.request().getParam("resource");
             String routeTo = rctx.request().path().replace("/api/" + apiVersion,
                     "");
 
+            System.out.println("Processing the request for " + apiVersion + "/"
+                    + resource);
+
             HttpClient httpClient = vertx.createHttpClient();
 
             httpClient
-                    .request(HttpMethod.GET,
-                            "metadata/computeMetadata/v1/project/attributes/"
+                    .request(HttpMethod.GET, "metadata",
+                            "/computeMetadata/v1/project/attributes/"
                                     + apiVersion + "-" + resource)
                     .putHeader("Metadata-Flavor", "Google").handler(res -> {
 
@@ -35,7 +39,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                     + " with route to " + routeTo
                                     + " end point is " + ipAddress);
 
-                            vertx.createHttpClient().getNow(ipAddress + routeTo,
+                            vertx.createHttpClient().getNow(ipAddress , routeTo,
                                     resp -> {
                                         resp.bodyHandler(data -> {
                                             rctx.response()
@@ -66,8 +70,8 @@ public class QAForumMainVerticle extends AbstractVerticle {
             HttpClient httpClient = vertx.createHttpClient();
 
             httpClient
-                    .request(HttpMethod.GET,
-                            "metadata/computeMetadata/v1/project/attributes/"
+                    .request(HttpMethod.GET, "metadata",
+                            "/computeMetadata/v1/project/attributes/"
                                     + apiVersion + "-" + resource)
                     .putHeader("Metadata-Flavor", "Google").handler(res -> {
 
@@ -79,7 +83,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                     + " end point is " + ipAddress);
                             HttpClientRequest postRequest = vertx
                                     .createHttpClient()
-                                    .post(ipAddress + routeTo, resp -> {
+                                    .post(ipAddress , routeTo, resp -> {
                                         resp.bodyHandler(data -> {
                                             rctx.response()
                                                     .setStatusCode(
