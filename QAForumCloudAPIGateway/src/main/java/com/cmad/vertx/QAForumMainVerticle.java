@@ -6,6 +6,7 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 
@@ -43,16 +44,15 @@ public class QAForumMainVerticle extends AbstractVerticle {
                             vertx.createHttpClient().getNow(ipAddress, routeTo,
                                     resp -> {
                                         resp.bodyHandler(data -> {
-                                            rctx.response()
+                                            HttpServerResponse responseToBeSent = rctx
+                                                    .response()
                                                     .setStatusCode(
                                                             resp.statusCode())
-                                                    .setStatusMessage(
-                                                            resp.statusMessage())
-                                                    .putHeader(
-                                                            HttpHeaders.CONTENT_TYPE,
-                                                            resp.getHeader(
-                                                                    HttpHeaders.CONTENT_TYPE))
-                                                    .end(data);
+                                                    .setStatusMessage(resp
+                                                            .statusMessage());
+                                            responseToBeSent.headers()
+                                                    .addAll(resp.headers());
+                                            responseToBeSent.end(data);
                                         });
                                     });
 
@@ -90,16 +90,15 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                     .createHttpClient()
                                     .post(ipAddress, routeTo, resp -> {
                                         resp.bodyHandler(data -> {
-                                            rctx.response()
+                                            HttpServerResponse responseToBeSent = rctx
+                                                    .response()
                                                     .setStatusCode(
                                                             resp.statusCode())
-                                                    .setStatusMessage(
-                                                            resp.statusMessage())
-                                                    .putHeader(
-                                                            HttpHeaders.LOCATION,
-                                                            resp.getHeader(
-                                                                    HttpHeaders.LOCATION))
-                                                    .end(data);
+                                                    .setStatusMessage(resp
+                                                            .statusMessage());
+                                            responseToBeSent.headers()
+                                                    .addAll(resp.headers());
+                                            responseToBeSent.end(data);
                                         });
                                     });
                             postRequest.headers()
