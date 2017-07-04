@@ -20,7 +20,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
             vertx.createHttpClient()
                     .getNow("metadata/computeMetadata/v1/project/attributes/"
-                            + apiVersion + ":" + resource, res -> {
+                            + apiVersion + "-" + resource, res -> {
                                 res.bodyHandler(buff -> {
                                     String ipAddress = buff.toString();
                                     System.out.println("GET version "
@@ -58,7 +58,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
             vertx.createHttpClient()
                     .getNow("metadata/computeMetadata/v1/project/attributes/"
-                            + apiVersion + ":" + resource, res -> {
+                            + apiVersion + "-" + resource, res -> {
                                 res.bodyHandler(buff -> {
                                     String ipAddress = buff.toString();
                                     System.out.println("POST version "
