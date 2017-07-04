@@ -69,7 +69,7 @@ public class MongoServiceVerticle extends AbstractVerticle {
 
             client.updateCollection(QUESTION_COLLECTION, query, update, res -> {
                 if (res.succeeded()) {
-                    message.reply(res.result());
+                    message.reply(res.result().toString());
                 } else {
                     res.cause().printStackTrace();
                     message.reply("-1");
