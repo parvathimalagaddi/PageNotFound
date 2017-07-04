@@ -23,6 +23,11 @@ public class QAForumMainVerticle extends AbstractVerticle {
                             + apiVersion + ":" + resource, res -> {
                                 res.bodyHandler(buff -> {
                                     String ipAddress = buff.toString();
+                                    System.out.println("GET version "
+                                            + apiVersion + " of resource "
+                                            + resource + " with route to "
+                                            + routeTo + " end point is "
+                                            + ipAddress);
 
                                     vertx.createHttpClient().getNow(
                                             ipAddress + routeTo, resp -> {
@@ -30,6 +35,8 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                                     rctx.response()
                                                             .setStatusCode(
                                                                     resp.statusCode())
+                                                            .setStatusMessage(
+                                                                    resp.statusMessage())
                                                             .end(data);
                                                 });
                                             });
@@ -44,27 +51,35 @@ public class QAForumMainVerticle extends AbstractVerticle {
             String resource = rctx.request().getParam("resource");
             String routeTo = rctx.request().path().replace("/api/" + apiVersion,
                     "");
-            
+
             /*
              * All post requests should contain a valid JWT Auth Token.
              */
-            
+
             vertx.createHttpClient()
                     .getNow("metadata/computeMetadata/v1/project/attributes/"
                             + apiVersion + ":" + resource, res -> {
                                 res.bodyHandler(buff -> {
                                     String ipAddress = buff.toString();
-
-                                    HttpClientRequest postRequest= vertx.createHttpClient()
+                                    System.out.println("POST version "
+                                            + apiVersion + " of resource "
+                                            + resource + " with route to "
+                                            + routeTo + " end point is "
+                                            + ipAddress);
+                                    HttpClientRequest postRequest = vertx
+                                            .createHttpClient()
                                             .post(ipAddress + routeTo, resp -> {
                                                 resp.bodyHandler(data -> {
                                                     rctx.response()
                                                             .setStatusCode(
                                                                     resp.statusCode())
+                                                            .setStatusMessage(
+                                                                    resp.statusMessage())
                                                             .end(data);
                                                 });
                                             });
-                                    postRequest.headers().addAll(rctx.request().headers());
+                                    postRequest.headers()
+                                            .addAll(rctx.request().headers());
                                     postRequest.end(rctx.getBodyAsString());
                                 });
                             });
