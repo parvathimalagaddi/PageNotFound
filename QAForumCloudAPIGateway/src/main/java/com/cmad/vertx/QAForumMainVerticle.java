@@ -71,7 +71,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
         });
 
         vertx.createHttpServer().requestHandler(router::accept)
-                .listen(config().getInteger("http.port", 8082), result -> {
+                .listen(config().getInteger("http.port", 8080), result -> {
                     if (result.succeeded()) {
                         future.complete();
                     } else {

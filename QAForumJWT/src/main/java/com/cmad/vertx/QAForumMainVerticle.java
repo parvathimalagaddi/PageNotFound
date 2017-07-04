@@ -26,6 +26,13 @@ public class QAForumMainVerticle extends AbstractVerticle {
                 new DeploymentOptions().setWorker(true));
 
         Router router = Router.router(vertx);
+        
+        router.get("/").handler(rctx -> {
+
+            rctx.response().setStatusCode(200).setStatusMessage("OK")
+                    .end("It works!");
+
+        });
 
         router.get("/user/:username/").handler(rctx -> {
 

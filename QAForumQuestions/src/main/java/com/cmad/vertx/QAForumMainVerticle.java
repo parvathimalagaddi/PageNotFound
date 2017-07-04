@@ -16,6 +16,17 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
         Router router = Router.router(vertx);
 
+        /*
+         * The below route is for health check.
+         */
+
+        router.get("/").handler(rctx -> {
+
+            rctx.response().setStatusCode(200).setStatusMessage("OK")
+                    .end("It works!");
+
+        });
+
         router.route("/question/").handler(BodyHandler.create());
         router.post("/question/").handler(rctx -> {
 
