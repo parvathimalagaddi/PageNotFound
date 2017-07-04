@@ -11,6 +11,7 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 
 public class QAForumMainVerticle extends AbstractVerticle {
@@ -82,6 +83,8 @@ public class QAForumMainVerticle extends AbstractVerticle {
              */
 
             if (!resource.equals("user")) {
+                System.out.println(
+                        "This is a restricted resource and needs authentication");
                 vertx.createHttpClient()
                         .request(HttpMethod.GET, "metadata",
                                 "/computeMetadata/v1/project/attributes/v1-user")
@@ -89,6 +92,9 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
                             res.bodyHandler(endPoint -> {
                                 String ipAddress = endPoint.toString();
+                                System.out.println(
+                                        "Auth: User Service located at "
+                                                + ipAddress);
 
                                 vertx.createHttpClient()
                                         .request(HttpMethod.GET, ipAddress,
@@ -97,12 +103,31 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                                 rctx.request().getHeader(
                                                         CmadUtils.JWT_TOKEN))
                                         .handler(authResp -> {
-                                            if (authResp.statusCode() == 401) {
+
+                                            switch (authResp.statusCode()) {
+
+                                            case 200:
+                                                System.out.println("Status OK");
+                                                sendAndReceiveFromEndpoint(rctx,
+                                                        apiVersion, resource,
+                                                        routeTo);
+                                                break;
+                                            case 401:
+                                                System.out.println(
+                                                        "Status Unauthorized");
                                                 rctx.response()
                                                         .setStatusCode(401)
                                                         .setStatusMessage(
                                                                 "Unauthorized")
                                                         .end("Unauthorized Access");
+                                                break;
+                                            default:
+                                                rctx.response()
+                                                        .setStatusCode(
+                                                                authResp.statusCode())
+                                                        .setStatusMessage(
+                                                                authResp.statusMessage())
+                                                        .end("Failure");
                                             }
                                         }).end();
 
@@ -110,42 +135,6 @@ public class QAForumMainVerticle extends AbstractVerticle {
 
                         }).end();
             }
-
-            HttpClient httpClient = vertx.createHttpClient();
-
-            httpClient
-                    .request(HttpMethod.GET, "metadata",
-                            "/computeMetadata/v1/project/attributes/"
-                                    + apiVersion + "-" + resource)
-                    .putHeader("Metadata-Flavor", "Google").handler(res -> {
-
-                        res.bodyHandler(buff -> {
-                            String ipAddress = buff.toString();
-                            System.out.println("POST version " + apiVersion
-                                    + " of resource " + resource
-                                    + " with route to " + routeTo
-                                    + " end point is " + ipAddress);
-                            HttpClientRequest postRequest = vertx
-                                    .createHttpClient()
-                                    .post(ipAddress, routeTo, resp -> {
-                                        resp.bodyHandler(data -> {
-                                            HttpServerResponse responseToBeSent = rctx
-                                                    .response()
-                                                    .setStatusCode(
-                                                            resp.statusCode())
-                                                    .setStatusMessage(resp
-                                                            .statusMessage());
-                                            responseToBeSent.headers()
-                                                    .addAll(resp.headers());
-                                            responseToBeSent.end(data);
-                                        });
-                                    });
-                            postRequest.headers()
-                                    .addAll(rctx.request().headers());
-                            postRequest.end(rctx.getBodyAsString());
-                        });
-
-                    }).end();
 
         });
 
@@ -157,6 +146,48 @@ public class QAForumMainVerticle extends AbstractVerticle {
                         future.fail(result.cause());
                     }
                 });
+    }
+
+    /**
+     * @param rctx
+     * @param apiVersion
+     * @param resource
+     * @param routeTo
+     */
+    private void sendAndReceiveFromEndpoint(RoutingContext rctx,
+            String apiVersion, String resource, String routeTo) {
+        HttpClient httpClient = vertx.createHttpClient();
+
+        httpClient
+                .request(HttpMethod.GET, "metadata",
+                        "/computeMetadata/v1/project/attributes/" + apiVersion
+                                + "-" + resource)
+                .putHeader("Metadata-Flavor", "Google").handler(res -> {
+
+                    res.bodyHandler(buff -> {
+                        String ipAddress = buff.toString();
+                        System.out.println("POST version " + apiVersion
+                                + " of resource " + resource + " with route to "
+                                + routeTo + " end point is " + ipAddress);
+                        HttpClientRequest postRequest = vertx.createHttpClient()
+                                .post(ipAddress, routeTo, resp -> {
+                                    resp.bodyHandler(data -> {
+                                        HttpServerResponse responseToBeSent = rctx
+                                                .response()
+                                                .setStatusCode(
+                                                        resp.statusCode())
+                                                .setStatusMessage(
+                                                        resp.statusMessage());
+                                        responseToBeSent.headers()
+                                                .addAll(resp.headers());
+                                        responseToBeSent.end(data);
+                                    });
+                                });
+                        postRequest.headers().addAll(rctx.request().headers());
+                        postRequest.end(rctx.getBodyAsString());
+                    });
+
+                }).end();
     }
 
     @Override
