@@ -3,10 +3,8 @@ package com.cmad.vertx;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.RequestOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 
@@ -96,7 +94,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
                             postRequest.end(rctx.getBodyAsString());
                         });
 
-                    });
+                    }).end();
 
         });
 
