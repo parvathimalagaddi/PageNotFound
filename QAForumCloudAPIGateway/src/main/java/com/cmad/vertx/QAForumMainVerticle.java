@@ -2,12 +2,10 @@ package com.cmad.vertx;
 
 import com.cmad.util.CmadUtils;
 
-import io.netty.handler.codec.http.HttpStatusClass;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
@@ -134,6 +132,8 @@ public class QAForumMainVerticle extends AbstractVerticle {
                             });
 
                         }).end();
+            } else {
+                sendAndReceiveFromEndpoint(rctx, apiVersion, resource, routeTo);
             }
 
         });
