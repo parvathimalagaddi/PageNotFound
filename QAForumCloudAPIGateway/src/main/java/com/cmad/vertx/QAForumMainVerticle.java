@@ -4,6 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -39,7 +40,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                     + " with route to " + routeTo
                                     + " end point is " + ipAddress);
 
-                            vertx.createHttpClient().getNow(ipAddress , routeTo,
+                            vertx.createHttpClient().getNow(ipAddress, routeTo,
                                     resp -> {
                                         resp.bodyHandler(data -> {
                                             rctx.response()
@@ -47,6 +48,10 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                                             resp.statusCode())
                                                     .setStatusMessage(
                                                             resp.statusMessage())
+                                                    .putHeader(
+                                                            HttpHeaders.CONTENT_TYPE,
+                                                            resp.getHeader(
+                                                                    HttpHeaders.CONTENT_TYPE))
                                                     .end(data);
                                         });
                                     });
@@ -83,13 +88,17 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                     + " end point is " + ipAddress);
                             HttpClientRequest postRequest = vertx
                                     .createHttpClient()
-                                    .post(ipAddress , routeTo, resp -> {
+                                    .post(ipAddress, routeTo, resp -> {
                                         resp.bodyHandler(data -> {
                                             rctx.response()
                                                     .setStatusCode(
                                                             resp.statusCode())
                                                     .setStatusMessage(
                                                             resp.statusMessage())
+                                                    .putHeader(
+                                                            HttpHeaders.LOCATION,
+                                                            resp.getHeader(
+                                                                    HttpHeaders.LOCATION))
                                                     .end(data);
                                         });
                                     });
