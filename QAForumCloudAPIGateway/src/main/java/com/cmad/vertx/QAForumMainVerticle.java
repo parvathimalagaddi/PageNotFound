@@ -83,55 +83,72 @@ public class QAForumMainVerticle extends AbstractVerticle {
             if (!resource.equals("user")) {
                 System.out.println(
                         "This is a restricted resource and needs authentication");
-                vertx.createHttpClient()
-                        .request(HttpMethod.GET, "metadata",
-                                "/computeMetadata/v1/project/attributes/v1-user")
-                        .putHeader("Metadata-Flavor", "Google").handler(res -> {
 
-                            res.bodyHandler(endPoint -> {
-                                String ipAddress = endPoint.toString();
-                                System.out.println(
-                                        "Auth: User Service located at "
-                                                + ipAddress);
+                /*
+                 * Check if jwt-auth-token header is there. If not there, throw
+                 * unauthorized.
+                 */
 
-                                vertx.createHttpClient()
-                                        .request(HttpMethod.GET, ipAddress,
-                                                "/user/ticket")
-                                        .putHeader(CmadUtils.JWT_TOKEN,
-                                                rctx.request().getHeader(
-                                                        CmadUtils.JWT_TOKEN))
-                                        .handler(authResp -> {
+                if (rctx.request().getHeader(CmadUtils.JWT_TOKEN) == null) {
+                    System.out.println("Status Unauthorized");
+                    rctx.response().setStatusCode(401)
+                            .setStatusMessage("Unauthorized")
+                            .end("Unauthorized Access, jwt-auth-token required in header.");
 
-                                            switch (authResp.statusCode()) {
+                } else {
 
-                                            case 200:
-                                                System.out.println("Status OK");
-                                                sendAndReceiveFromEndpoint(rctx,
-                                                        apiVersion, resource,
-                                                        routeTo);
-                                                break;
-                                            case 401:
-                                                System.out.println(
-                                                        "Status Unauthorized");
-                                                rctx.response()
-                                                        .setStatusCode(401)
-                                                        .setStatusMessage(
-                                                                "Unauthorized")
-                                                        .end("Unauthorized Access");
-                                                break;
-                                            default:
-                                                rctx.response()
-                                                        .setStatusCode(
-                                                                authResp.statusCode())
-                                                        .setStatusMessage(
-                                                                authResp.statusMessage())
-                                                        .end("Failure");
-                                            }
-                                        }).end();
+                    vertx.createHttpClient()
+                            .request(HttpMethod.GET, "metadata",
+                                    "/computeMetadata/v1/project/attributes/v1-user")
+                            .putHeader("Metadata-Flavor", "Google")
+                            .handler(res -> {
 
-                            });
+                                res.bodyHandler(endPoint -> {
+                                    String ipAddress = endPoint.toString();
+                                    System.out.println(
+                                            "Auth: User Service located at "
+                                                    + ipAddress);
 
-                        }).end();
+                                    vertx.createHttpClient()
+                                            .request(HttpMethod.GET, ipAddress,
+                                                    "/user/ticket")
+                                            .putHeader(CmadUtils.JWT_TOKEN,
+                                                    rctx.request().getHeader(
+                                                            CmadUtils.JWT_TOKEN))
+                                            .handler(authResp -> {
+
+                                                switch (authResp.statusCode()) {
+
+                                                case 200:
+                                                    System.out.println(
+                                                            "Status OK");
+                                                    sendAndReceiveFromEndpoint(
+                                                            rctx, apiVersion,
+                                                            resource, routeTo);
+                                                    break;
+                                                case 401:
+                                                    System.out.println(
+                                                            "Status Unauthorized");
+                                                    rctx.response()
+                                                            .setStatusCode(401)
+                                                            .setStatusMessage(
+                                                                    "Unauthorized")
+                                                            .end("Unauthorized Access");
+                                                    break;
+                                                default:
+                                                    rctx.response()
+                                                            .setStatusCode(
+                                                                    authResp.statusCode())
+                                                            .setStatusMessage(
+                                                                    authResp.statusMessage())
+                                                            .end("Failure");
+                                                }
+                                            }).end();
+
+                                });
+
+                            }).end();
+                }
             } else {
                 sendAndReceiveFromEndpoint(rctx, apiVersion, resource, routeTo);
             }
