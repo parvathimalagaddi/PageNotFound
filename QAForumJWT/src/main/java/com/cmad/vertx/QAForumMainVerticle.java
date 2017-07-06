@@ -112,7 +112,8 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                 rctx.response().setStatusCode(200)
                                         .end(result.getString("username"));
                             } else {
-                                rctx.response().setStatusCode(401).end();
+                                rctx.response().setStatusCode(401).end(
+                                        "Please enter correct credentials.");
                             }
                         });
             }

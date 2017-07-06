@@ -2,7 +2,7 @@ FROM node:8.1.2-alpine
 
 COPY ./ ./ 
 
-RUN npm install && RUN npm install --save-dev nodemon
+RUN npm install 
 
-CMD ["npm" , "run" , "server"]
+CMD ["npm" , "start"]
 
