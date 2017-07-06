@@ -79,7 +79,8 @@ public class QAForumMainVerticle extends AbstractVerticle {
                     rctx.getBodyAsJson().encodePrettily(), res -> {
 
                         if (res.result().body().toString().contains("Failed")) {
-                            rctx.response().setStatusCode(401).end();
+                            rctx.response().setStatusCode(401)
+                                    .end("Please enter correct credentials.");
                         } else {
 
                             vertx.eventBus().send(TICKET_GET,
@@ -112,8 +113,7 @@ public class QAForumMainVerticle extends AbstractVerticle {
                                 rctx.response().setStatusCode(200)
                                         .end(result.getString("username"));
                             } else {
-                                rctx.response().setStatusCode(401).end(
-                                        "Please enter correct credentials.");
+                                rctx.response().setStatusCode(401).end();
                             }
                         });
             }
