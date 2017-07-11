@@ -22,7 +22,9 @@ public class MongoServiceVerticle extends AbstractVerticle {
             System.out.println(
                     "To be Created Question " + message.body().toString());
             client.insert(QUESTION_COLLECTION,
-                    new JsonObject(message.body().toString()), res -> {
+                    new JsonObject(message.body().toString()).put("postTime",
+                            System.currentTimeMillis()),
+                    res -> {
                         if (res.succeeded()) {
                             message.reply(res.result());
                         } else {
@@ -36,10 +38,40 @@ public class MongoServiceVerticle extends AbstractVerticle {
         vertx.eventBus().consumer(QUESTION_ALL, message -> {
 
             FindOptions findOptions = new FindOptions();
-            findOptions.setFields(new JsonObject().put("question", "1"));
+            findOptions.setFields(new JsonObject().put("question", "1")
+                    .put("username", "2").put("postTime", "3"));
 
             client.findWithOptions(QUESTION_COLLECTION, new JsonObject(),
                     findOptions, res -> {
+                        if (res.succeeded()) {
+                            if (res.result().size() != 0) {
+                                message.reply(res.result().toString());
+                            } else {
+                                message.reply("");
+                            }
+                        } else {
+                            res.cause().printStackTrace();
+                            message.reply("");
+                        }
+                    });
+        });
+
+        vertx.eventBus().consumer(QUESTION_SEARCH, message -> {
+
+            FindOptions findOptions = new FindOptions();
+            findOptions.setFields(new JsonObject().put("question", 1)
+                    .put("username", 1).put("postTime", 1));
+
+            System.out.println("Search for question which contains "
+                    + message.body().toString());
+
+            JsonObject queryJson = new JsonObject();
+            queryJson.put("$text",
+                    new JsonObject().put("$search", message.body().toString())
+                            .put("$caseSensitive", false));
+
+            client.findWithOptions(QUESTION_COLLECTION, queryJson, findOptions,
+                    res -> {
                         if (res.succeeded()) {
                             if (res.result().size() != 0) {
                                 message.reply(res.result().toString());
@@ -69,7 +101,7 @@ public class MongoServiceVerticle extends AbstractVerticle {
 
             client.updateCollection(QUESTION_COLLECTION, query, update, res -> {
                 if (res.succeeded()) {
-                    message.reply(""+res.result().getDocModified());
+                    message.reply("" + res.result().getDocModified());
                 } else {
                     res.cause().printStackTrace();
                     message.reply("-1");
